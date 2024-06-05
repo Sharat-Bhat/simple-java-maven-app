@@ -16,42 +16,10 @@ pipeline {
                 }
             }
         }
-        stage('Extract Project Info') {
-            steps {
-                script {
-                    // Extracting project name and sanitizing it
-                    env.PROJECT_NAME = sh(script: "mvn -q -DforceStdout help:evaluate -Dexpression=project.name | grep -v '\\[' | tr -d '\\n\\r'", returnStdout: true).trim()
-                    echo "Extracted Project Name: ${env.PROJECT_NAME}"
-
-                    // Extracting project version and sanitizing it
-                    env.PROJECT_VERSION = sh(script: "mvn -q -DforceStdout help:evaluate -Dexpression=project.version | grep -v '\\[' | tr -d '\\n\\r'", returnStdout: true).trim()
-                    echo "Extracted Project Version: ${env.PROJECT_VERSION}"
-                }
-            }
-        }
-        stage('Verify JAR File') {
-            steps {
-                script {
-                    def jarFile = "target/${env.PROJECT_NAME}-${env.PROJECT_VERSION}.jar"
-                    echo "Expected JAR file path: ${jarFile}"
-
-                    // Verify if the JAR file exists
-                    sh "ls -la ${jarFile}"
-                }
-            }
-        }
         stage('Deliver') {
             steps {
-                script {
-                    def jarFile = "target/${env.PROJECT_NAME}-${env.PROJECT_VERSION}.jar"
-                    sh "java -jar ${jarFile}"
-                }
+                sh './jenkins/scripts/deliver.sh'
             }
-        }
-    }
-    post {
-        failure {
-            echo 'Pipeline failed!'
         }
     }
 }
